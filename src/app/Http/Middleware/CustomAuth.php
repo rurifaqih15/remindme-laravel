@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Models\PersonalAccessToken;
 use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Auth;
 
 class CustomAuth
 {
@@ -26,6 +27,7 @@ class CustomAuth
         if (!isValidAccessToken($accessToken)) {
             throw new HttpException(401,'Invalid access token');
         }
+        Auth::loginUsingId(PersonalAccessToken::where('token',$accessToken)->first()->tokenable_id);
         return $next($request);
     }
 }

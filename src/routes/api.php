@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\ReminderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,5 +23,9 @@ Route::group([
     'prefix' => 'reminders',
     'middleware' => 'customAuth'
 ], function () {
-       
+       Route::get('/',[ReminderController::class,'index']);
+       Route::post('/',[ReminderController::class,'store']);
+       Route::get('/{id}',[ReminderController::class,'show']);
+       Route::put('/{id}',[ReminderController::class,'update']);
+       Route::delete('/{id}',[ReminderController::class,'destroy']);
 });

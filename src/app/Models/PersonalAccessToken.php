@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 class PersonalAccessToken extends Model
 {
-    const LIFE_TIME=20;
+    const LIFE_TIME=20000;
     protected $fillable =[
         'id',
         'name',
