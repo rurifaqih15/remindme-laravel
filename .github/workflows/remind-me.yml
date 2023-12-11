@@ -17,10 +17,11 @@ jobs:
       BROADCAST_DRIVER: log
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.1
         env:
-           MYSQL_DATABASE: remind_me
-           MYSQL_ROOT_PASSWORD: password
+           MYSQL_DATABASE: "remind_me"
+           MYSQL_ROOT_PASSWORD: "password"
+           MYSQL_ROOT_HOST : "%"
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
