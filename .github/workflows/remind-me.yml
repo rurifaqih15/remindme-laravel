@@ -37,7 +37,8 @@ jobs:
       run: |
           sudo apt-get update
           sudo apt-get install -y  mysql-client 
-          
+    - name: Check MySQL Status
+      run: sudo service mysql status    
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.ci', '.env');"
       working-directory: src
