@@ -37,8 +37,8 @@ jobs:
       run: sudo /etc/init.d/mysql start
     - name: Grant MySQL privileges
       run: |
-          echo "GRANT ALL PRIVILEGES ON remind_me.* TO 'root'@'localhost' IDENTIFIED BY 'password';" | mysql -h127.0.0.1 -P3306 -uroot -proot_password
-          echo "FLUSH PRIVILEGES;" | mysql -h127.0.0.1 -P3306 -uroot -proot_password
+          echo "GRANT ALL PRIVILEGES ON remind_me.* TO 'root'@'localhost' IDENTIFIED BY 'password';" | mysql -h 127.0.0.1 -P3306 -u root -p password
+          echo "FLUSH PRIVILEGES;" | mysql -h127.0.0.1 -P3306 -u root -p password
 
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.ci', '.env');"
