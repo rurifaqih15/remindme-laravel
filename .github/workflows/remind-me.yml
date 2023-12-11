@@ -67,14 +67,7 @@ jobs:
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
+      run: |
+          php artisan db:seed
+          php artisan test
       working-directory: src
-
-    - name: Run seeder
-      run: php artisan db:seed
-      working-directory: src
-
-    - name: Run tests
-      run: php artisan test
-      working-directory: src
-
-
