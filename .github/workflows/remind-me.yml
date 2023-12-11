@@ -34,6 +34,8 @@ jobs:
             php-version: '8.2'
             extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
             coverage: none
+    - name: Start mysql service
+      run: sudo /etc/init.d/mysql start
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.ci', '.env');"
       working-directory: src
