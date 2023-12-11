@@ -46,8 +46,8 @@ jobs:
     - name: Run MySQL commands
       run: |
         mysql -h localhost -u root -ppassword <<EOF
-        CREATE USER 'laravel_user'@'localhost' IDENTIFIED BY 'user_password';
-        GRANT ALL PRIVILEGES ON remind_me.* TO 'laravel_user'@'localhost';
+        CREATE USER 'root'@'localhost' IDENTIFIED BY 'root';
+        GRANT ALL PRIVILEGES ON remind_me.* TO 'root'@'localhost';
         FLUSH PRIVILEGES;
         EOF
     - name: Copy .env
