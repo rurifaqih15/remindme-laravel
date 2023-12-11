@@ -74,6 +74,7 @@ jobs:
         DB_USERNAME: root
         DB_PASSWORD: password
       run: |
+          php artisan migrate
           php artisan db:seed
           php artisan test
       working-directory: src
