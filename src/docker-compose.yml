@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+    db:
+        image: mysql:8.1
+        environment:
+            MYSQL_ALLOW_EMPTY_PASSWORD: false
+            MYSQL_DATABASE: remind_me
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_PASSWORD: password
+            MYSQL_USER: rulli
+            DB_HOST: db
+        ports:
+            - "3306:3306"
+        networks:
+            - mynetwork
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        depends_on:
+            - db
+        command:
+            - sh
+            - -c
+            - "sleep 10 && php artisan migrate:fresh && php artisan db:seed"
+        networks:
+            - mynetwork
+    web:
+        image: nginx:alpine
+        volumes:
+            - /Users/rulli/pribadi/remindme-laravel/src/docker/nginx:/etc/nginx/conf.d
+        ports:
+            - "9000:80"
+        depends_on:
+            - app
+        networks:
+            - mynetwork
+networks:
+    mynetwork:
+        driver: bridge
