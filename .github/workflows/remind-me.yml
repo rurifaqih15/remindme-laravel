@@ -24,6 +24,7 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
     - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
     - uses: actions/checkout@v3
@@ -37,6 +38,8 @@ jobs:
       run: |
           sudo apt-get update
           sudo apt-get install -y  mysql-client 
+    - name: Start mysql service
+      run: sudo /etc/init.d/mysql start
     - name: Check MySQL Status
       run: sudo service mysql status    
     - name: Copy .env
