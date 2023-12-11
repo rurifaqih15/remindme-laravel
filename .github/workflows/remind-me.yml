@@ -20,13 +20,15 @@ jobs:
       mysql:
         image: mysql:8.1
         env:
-           MYSQL_DATABASE: remind_me
-           MYSQL_ROOT_PASSWORD: password
-           MYSQL_ROOT_HOST : '%'
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: remind_me
+          MYSQL_ROOT_PASSWORD: root
+          DB_PORT: ${{ job.services.mysql.ports[3306] }}
         ports:
-          - 3306:3306
+          - 33306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
+ 
     steps:
     - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
     - uses: actions/checkout@v3
@@ -36,14 +38,13 @@ jobs:
             php-version: '8.2'
             extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
             coverage: none
-    - name: install mysql client
-      run: |
-          sudo apt-get update
-          sudo apt-get install -y  mysql-client 
     - name: Start mysql service
       run: sudo /etc/init.d/mysql start
     - name: Check MySQL Status
-      run: sudo service mysql status   
+      run: sudo service mysql status  
+    - name: Verify MySQL connection
+      run: |
+        mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -uuser -ppassword -e "SHOW DATABASES"
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.ci', '.env');"
       working-directory: src
@@ -58,24 +59,26 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
     - name: Run composer install
-      run: composer install -n --prefer-dist
+      run: |
+        php --version
+        composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+        chmod -R 777 storage bootstrap/cache
       working-directory: src
 
     - name: Generate key
       run: php artisan key:generate
       working-directory: src
-
-    - name: Directory Permissions
-      run: chmod -R 777 storage bootstrap/cache
-      working-directory: src
+      
     - name: Execute tests (Unit and Feature tests) via PHPUnit
       env:
         DB_CONNECTION: mysql
         DB_HOST: 127.0.0.1
         DB_DATABASE: remind_me
-        DB_USERNAME: root
+        DB_USERNAME: user
         DB_PASSWORD: password
       run: |
+          php artisan config:clear
+          php artisan config:cache
           php artisan migrate
           php artisan db:seed
           php artisan test
