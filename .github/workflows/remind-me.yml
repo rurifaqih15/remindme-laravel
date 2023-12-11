@@ -40,12 +40,7 @@ jobs:
       run: |
           sudo apt-get update
           sudo apt-get install -y  mysql-client 
-
-    - name: Grant MySQL privileges
-      run: |
-          echo "GRANT ALL PRIVILEGES ON remind_me.* TO 'root'@'localhost' IDENTIFIED BY 'password';" | mysql -h 127.0.0.1 -P 3306 -u root -p password
-          echo "FLUSH PRIVILEGES;" | mysql -h127.0.0.1 -P 3306 -u root -p password
-
+          
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.ci', '.env');"
       working-directory: src
