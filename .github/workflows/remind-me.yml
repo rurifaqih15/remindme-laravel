@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DB_DATABASE: remind_me
-      DB_USERNAME: root
+      DB_USERNAME: admin
       DB_PASSWORD: password
       BROADCAST_DRIVER: log
     services:
@@ -43,13 +43,6 @@ jobs:
       run: sudo /etc/init.d/mysql start
     - name: Check MySQL Status
       run: sudo service mysql status   
-    - name: Run MySQL commands
-      run: |
-        mysql -h localhost -u root -ppassword <<EOF
-        CREATE USER 'root'@'localhost' IDENTIFIED BY 'root';
-        GRANT ALL PRIVILEGES ON remind_me.* TO 'root'@'localhost';
-        FLUSH PRIVILEGES;
-        EOF
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.ci', '.env');"
       working-directory: src
@@ -79,7 +72,7 @@ jobs:
         DB_CONNECTION: mysql
         DB_HOST: localhost
         DB_DATABASE: remind_me
-        DB_USERNAME: root
+        DB_USERNAME: admin
         DB_PASSWORD: password
       run: |
           php artisan migrate
