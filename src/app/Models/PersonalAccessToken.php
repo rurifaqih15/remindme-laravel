@@ -5,11 +5,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 class PersonalAccessToken extends Model
 {
+    use HasFactory;
     const LIFE_TIME=20000;
     protected $fillable =[
-        'id',
         'name',
         'tokenable_id',
         'tokenable_type',

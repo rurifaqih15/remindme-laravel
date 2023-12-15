@@ -41,12 +41,12 @@ public function updateToken(Request $request){
         if(!$personalAccessToken){
             return errorResponse('ERR_INVALID_REFRESH_TOKEN','invalid refresh token',401);
         }
-        PersonalAccessToken::where('refresh_token',$personalAccessToken)
+        PersonalAccessToken::where(['refresh_token' => $personalAccessToken])
         ->update([
             'token' => Str::uuid(),
         ]);
         
-        $personalAccessToken = PersonalAccessToken::where('refresh_token',$refreshToken)->first();
+        $personalAccessToken = PersonalAccessToken::where(['refresh_token' => $refreshToken])->first();
 
         $data = [
             'access_token' =>  $personalAccessToken->token

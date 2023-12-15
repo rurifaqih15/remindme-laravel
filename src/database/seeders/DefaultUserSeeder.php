@@ -26,6 +26,7 @@ class DefaultUserSeeder extends Seeder
         ];
         foreach($users as $user){ 
             \App\Models\User::factory()->create([
+                'name' => $user['name'],
                 'email' => $user['email'],
                 'password' => $user['password'],
             ]);

@@ -9,7 +9,9 @@ use Tests\TestCase;
 
 class ReminderControllerTest extends TestCase
 {
-   public function getAuth(){
+    use RefreshDatabase;
+    public function getAuth(){
+        $this->runSeed();
         $response = $this->postJson('/api/session', [
             'email' => 'bob@mail.com',
             'password' => 123456,
@@ -19,6 +21,7 @@ class ReminderControllerTest extends TestCase
 
     public function testListReminders()
     {
+        $this->runSeed();
         Reminder::factory()->create();
         $response = $this->getJson('/api/reminders?limit=5', [
             'Authorization' => 'Bearer ' . $this->getAuth()->access_token,
@@ -51,6 +54,7 @@ class ReminderControllerTest extends TestCase
 
     public function testCreateReminder()
     {
+        $this->runSeed();
         $headers = [
             'Authorization' => 'Bearer '. $this->getAuth()->access_token,
             'Accept' => 'application/json',
@@ -81,6 +85,7 @@ class ReminderControllerTest extends TestCase
 
     public function testViewReminder()
     {
+        $this->runSeed();
         $headers = [
             'Authorization' => 'Bearer '. $this->getAuth()->access_token,
             'Accept' => 'application/json',
@@ -105,6 +110,7 @@ class ReminderControllerTest extends TestCase
 
     public function testEditReminder()
     {
+        $this->runSeed();
         $headers = [
             'Authorization' => 'Bearer '. $this->getAuth()->access_token,
             'Accept' => 'application/json',
@@ -135,6 +141,7 @@ class ReminderControllerTest extends TestCase
 
     public function testDestroyReminder()
     {
+        $this->runSeed();
         $headers = [
             'Authorization' => 'Bearer '. $this->getAuth()->access_token,
             'Accept' => 'application/json',

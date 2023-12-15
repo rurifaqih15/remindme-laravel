@@ -19,7 +19,7 @@ class ReminderFactory extends Factory
         return [
             'title' => $this->faker->sentence,
             'user_id' => $user->id,
-            'description' => $this->faker->paragraph,
+            'description' => $this->faker->sentence,
             'remind_at' => $this->faker->dateTimeBetween('now', '+1 week')->getTimestamp(),
             'event_at' => $this->faker->dateTimeBetween('+1 week', '+2 weeks')->getTimestamp(),
         ];
