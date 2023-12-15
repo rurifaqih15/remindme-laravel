@@ -10,8 +10,10 @@ use App\Models\PersonalAccessToken;
 
 class SessionControllerTest extends TestCase
 {
+    use RefreshDatabase;
     public function test_create_session_endpoint()
     {
+        $this->runSeed();
         $response = $this->postJson('/api/session', [
             'email' => 'bob@mail.com',
             'password' => 123456,
@@ -39,6 +41,7 @@ class SessionControllerTest extends TestCase
 
     public function test_update_token_endpoint()
     {
+        $this->runSeed();
         $response = $this->postJson('/api/session', [
             'email' => 'bob@mail.com',
             'password' => 123456,
