@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class PersonalAccessToken extends Model
 {
     use HasFactory;
-    const LIFE_TIME=20000;
+    const LIFE_TIME=20;
     protected $fillable =[
         'name',
         'tokenable_id',
