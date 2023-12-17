@@ -186,6 +186,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
         axios.get('/api/reminders', {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -430,7 +433,6 @@
                     },
                 })
                 .then(function(response) {
-                    showSuccessAlert('Reminder deleted successfully');
                     location.reload();
                 })
                 .catch(function(error) {
@@ -509,6 +511,7 @@
                 .then(function(response) {
                     const accessToken = response.data.data.access_token;
                     localStorage.removeItem('access_token');
+                    wait();
                     localStorage.setItem('access_token', accessToken);
                 })
                 .catch(function(error) {
@@ -532,6 +535,14 @@
             document.getElementById('showRemindAt').innerText = formattedRemindAt
             document.getElementById('showEventAt').innerText = formattedEventAt;
             document.getElementById('showReminderModal').classList.remove('hidden');
+        }
+
+        function confirmDeleteReminder(){
+
+        }
+
+        async function wait() {
+            await sleep(1000);
         }
     </script>
 </body>
