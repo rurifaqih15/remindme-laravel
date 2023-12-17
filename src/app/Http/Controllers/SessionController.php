@@ -9,6 +9,7 @@ use Str;
 use App\Http\Resources\UserResource;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Models\PersonalAccessToken;
+use Carbon\Carbon;
 class SessionController extends Controller
 {
     public function createSession(SessionRequest $request){
@@ -41,13 +42,13 @@ public function updateToken(Request $request){
         if(!$personalAccessToken){
             return errorResponse('ERR_INVALID_REFRESH_TOKEN','invalid refresh token',401);
         }
-        PersonalAccessToken::where(['refresh_token' => $personalAccessToken])
+        PersonalAccessToken::where('id', $personalAccessToken->id)
         ->update([
             'token' => Str::uuid(),
+            'expires_at' => Carbon::now()->addSeconds(20)
         ]);
         
-        $personalAccessToken = PersonalAccessToken::where(['refresh_token' => $refreshToken])->first();
-
+        $personalAccessToken =  PersonalAccessToken::where('id', $personalAccessToken->id)->first();
         $data = [
             'access_token' =>  $personalAccessToken->token
         ];

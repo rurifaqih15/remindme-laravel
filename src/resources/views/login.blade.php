@@ -48,8 +48,9 @@
             .then(function (response) {
                 var loginResultElement = document.getElementById('loginResult');
                 const accessToken = response.data.data.access_token;
+                const refreshToken = response.data.data.refresh_token;
                 localStorage.setItem('access_token', accessToken);
-                loginResultElement.innerHTML = '<p class="text-green-500">Login successful!'+accessToken+'</p>';
+                localStorage.setItem('refresh_token', refreshToken);
                 window.location.href = '/reminder-list';
             })
             .catch(function (error) {

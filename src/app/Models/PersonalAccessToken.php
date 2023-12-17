@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class PersonalAccessToken extends Model
 {
     use HasFactory;
-    const LIFE_TIME=20000;
+    const LIFE_TIME=20;
     protected $fillable =[
         'name',
         'tokenable_id',
@@ -27,10 +27,6 @@ class PersonalAccessToken extends Model
         parent::boot();
 
         self::creating(function($m){
-            $m->expires_at = Carbon::now()->addSeconds(self::LIFE_TIME);
-        });
-
-        self::updating(function($m){
             $m->expires_at = Carbon::now()->addSeconds(self::LIFE_TIME);
         });
     }
