@@ -29,10 +29,6 @@ class PersonalAccessToken extends Model
         self::creating(function($m){
             $m->expires_at = Carbon::now()->addSeconds(self::LIFE_TIME);
         });
-
-        self::updating(function($m){
-            $m->expires_at = Carbon::now()->addSeconds(self::LIFE_TIME);
-        });
     }
 
     public function tokens()

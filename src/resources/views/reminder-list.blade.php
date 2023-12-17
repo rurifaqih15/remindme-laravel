@@ -18,16 +18,13 @@
 
     <div class="container mx-auto p-4">
         <h1 class="text-2xl font-bold mb-6">Reminder List</h1>
-
         <div class="mb-4 flex justify-end">
-            <!-- Tombol untuk menampilkan pop up -->
             <button onclick="openCreateReminderModal()"
                 class="bg-green-500 text-white p-2 rounded hover:bg-green-600 focus:outline-none focus:border-green-700">
                 <i class="fas fa-plus"></i> Create Reminder
             </button>
         </div>
         <div id="reminderList">
-            <!-- Konten reminder list akan ditambahkan di sini -->
         </div>
 
 
@@ -195,67 +192,18 @@
                 },
             })
             .then(function(response) {
-                var reminderListElement = document.getElementById('reminderList');
-                var reminders = response.data.data.reminders;
-
-                if (reminders.length > 0) {
-                    reminderListElement.innerHTML = `
-            <table class="table-auto w-full border-collapse border text-sm">
-                <thead>
-                    <tr>
-                      <th class="border-2">Id</th>
-                        <th class="border-2">Title</th>
-                        <th class="border-2">Description</th>
-                        <th class="border-2">Remind At</th>
-                        <th class="border-2">Event At</th>
-                        <th class="border-2">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${reminders.map(function (reminder) {
-                        const formattedRemindAt = reminder.remind_at
-                            ? new Date(reminder.remind_at * 1000).toLocaleString()
-                            : 'N/A';
-
-                        const formattedEventAt = reminder.event_at
-                            ? new Date(reminder.event_at * 1000).toLocaleString()
-                            : 'N/A';
-
-                        return `
-                                <tr class="border-2">
-                                    <td class="border-2">${reminder.id}</td>
-                                    <td class="border-2">${reminder.title}</td>
-                                    <td class="border-2">${reminder.description}</td>
-                                    <td class="border-2">${formattedRemindAt}</td>
-                                    <td class="border-2">${formattedEventAt}</td>
-                                    <td class="border-2 flex items-center">
-                                        <button onclick="editReminder(${reminder.id})"
-                                            class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 focus:outline-none focus:border-blue-700 mr-2">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button onclick="deleteReminder(${reminder.id})"
-                                            class="bg-red-500 text-white p-2 rounded hover:bg-red-600 focus:outline-none focus:border-red-700 mr-2">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        <button onclick="viewReminder(${reminder.id})"
-                                            class="bg-green-500 text-white p-2 rounded hover:bg-green-600 focus:outline-none focus:border-green-700">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </td>
-                                </tr>`;
-                    }).join('')}
-                </tbody>
-            </table>`;
-                } else {
-                    reminderListElement.innerHTML = '<p>No reminders found.</p>';
-                }
+                getReminderList(response);
             })
             .catch(function(error) {
-                $checkErrorMessage = error.err;
+                var checkErrorMessage = error.response.data.err;
+                
                 if(checkErrorMessage == 'ERR_INVALID_ACCESS_TOKEN'){
-                    
+                    getNewToken();
+                    changeLimit(10);
+                }else{
+                    console.error('Error fetching reminders:', error);
                 }
-                console.error('Error fetching reminders:', error);
+               
             });
 
         function changeLimit(newLimit) {
@@ -263,8 +211,240 @@
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
                 },
-            }).then(function(response) {
-                var reminderListElement = document.getElementById('reminderList');
+            })
+            .then(function(response) {
+                getReminderList(response);
+            }).catch(function(error){
+                var checkErrorMessage = error.response.data.err;
+                
+                if(checkErrorMessage == 'ERR_INVALID_ACCESS_TOKEN'){
+                    getNewToken();
+                    changeLimit(newLimit);
+                }else{
+                    console.error('Error fetching reminders:', error);
+                }
+            });
+        }
+
+        function viewReminder(reminderId) {
+            axios.get(`/api/reminders/${reminderId}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                    },
+                })
+                .then(function(response) {
+                    getDetail(response);
+                })
+                .catch(function(error) {
+                    var checkErrorMessage = error.response.data.err;
+                    
+                    if(checkErrorMessage == 'ERR_INVALID_ACCESS_TOKEN'){
+                        getNewToken();
+                        viewReminder(reminderId);
+                    }else{
+                        console.error('Error fetching reminder details:', error);
+                    }
+                   
+                });
+        }
+
+        function closeShowReminderModal() {
+            document.getElementById('showReminderModal').classList.add('hidden');
+        }
+
+        function openCreateReminderModal() {
+            var modal = document.getElementById('createReminderModal');
+            modal.style.display = 'block';
+        }
+
+        function closeCreateReminderModal() {
+            var modal = document.getElementById('createReminderModal');
+            modal.style.display = 'none';
+        }
+
+        function createReminder() {
+            var title = document.getElementById('reminderTitle').value;
+            var description = document.getElementById('reminderDescription').value;
+            var remindAt = new Date(document.getElementById('reminderRemindAt').value).getTime() / 1000;
+            var eventAt = new Date(document.getElementById('reminderEventAt').value).getTime() / 1000;
+
+            var payload = {
+                title: title,
+                description: description,
+                remind_at: remindAt,
+                event_at: eventAt,
+            };
+
+            axios.post('/api/reminders', payload, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                    },
+                })
+                .then(function(response) {
+                    closeCreateReminderModal();
+                    location.reload();
+                })
+                .catch(function(error) {
+                var checkErrorMessage = error.response.data.err;
+                if(checkErrorMessage == 'ERR_INVALID_ACCESS_TOKEN'){
+                    getNewToken();
+                    createReminder();
+                }else{
+                    console.error('Error creating reminder:', error);
+                } 
+                   
+                });
+        }
+
+        function showReminder(reminderId) {
+            axios.get(`/api/reminders/${reminderId}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                    },
+                })
+                .then(function(response) {
+                    getDetail(response);
+                })
+                .catch(function(error) {
+                var checkErrorMessage = error.response.data.err;
+                if(checkErrorMessage == 'ERR_INVALID_ACCESS_TOKEN'){
+                    showReminder(reminderId);
+                }else{
+                    console.error('Error fetching reminder details:', error);
+                } 
+                   
+                });
+        }
+
+        function closeShowReminderModal() {
+            document.getElementById('showReminderModal').classList.add('hidden');
+        }
+
+        function editReminder(id) {
+            axios.get(`/api/reminders/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                    },
+                })
+                .then(function(response) {
+                    var reminder = response.data.data;
+                    document.getElementById('editReminderId').value = reminder.id;
+                    document.getElementById('editReminderTitle').value = reminder.title;
+                    document.getElementById('editReminderDescription').value = reminder.description;
+                    document.getElementById('editReminderRemindAt').value = new Date(reminder.remind_at * 1000)
+                        .toISOString().slice(0, -8);
+                    document.getElementById('editReminderEventAt').value = new Date(reminder.event_at * 1000)
+                        .toISOString().slice(0, -8);
+                    document.getElementById('editReminderModal').classList.remove('hidden');
+                })
+                .catch(function(error) {
+                    var checkErrorMessage = error.response.data.err;
+                    if(checkErrorMessage == 'ERR_INVALID_ACCESS_TOKEN'){
+                        getNewToken();
+                        editReminder(id)
+                    }else{
+                        console.error('Error fetching reminder details for editing:', error);
+                    }
+                   
+                });
+        }
+
+        // Function to update the reminder
+        function updateReminder() {
+            const reminderId = document.getElementById('editReminderId').value;
+            const title = document.getElementById('editReminderTitle').value;
+            const description = document.getElementById('editReminderDescription').value;
+            const remindAt = new Date(document.getElementById('editReminderRemindAt').value).getTime() / 1000;
+            const eventAt = new Date(document.getElementById('editReminderEventAt').value).getTime() / 1000;
+            axios.put(`/api/reminders/${reminderId}`, {
+                    title: title,
+                    description: description,
+                    remind_at: remindAt,
+                    event_at: eventAt,
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                    },
+                })
+                .then(function(response) {
+                    closeEditReminderModal();
+                    location.reload();
+                })
+                .catch(function(error) {
+                    var checkErrorMessage = error.response.data.err;
+                    if(checkErrorMessage == 'ERR_INVALID_ACCESS_TOKEN'){
+                        getNewToken();
+                        updateReminder();
+                    }else{
+                        console.error('Error fetching reminder details for editing:', error);
+                    }
+                });
+        }
+
+        function closeEditReminderModal() {
+            document.getElementById('editReminderModal').classList.add('hidden');
+        }
+
+        function deleteReminder(id) {
+            document.getElementById('deleteReminderModal').classList.remove('hidden');
+            document.getElementById('deleteReminderModal').addEventListener('click', function(event) {
+                if (event.target.classList.contains('bg-red-500')) {
+                    axios.delete(`/api/reminders/${id}`, {
+                            headers: {
+                                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                            },
+                        })
+                        .then(function() {
+                            showSuccessAlert('Reminder deleted successfully');
+                            closeDeleteReminderModal();
+                            fetchReminders();
+                        })
+                        .catch(function(error) {
+                            var checkErrorMessage = error.response.data.err;
+                            if(checkErrorMessage == 'ERR_INVALID_ACCESS_TOKEN'){
+                                getNewToken();
+                                deleteReminder(id);
+                            }else{
+                                console.error('Error deleting reminder:', error);
+                            }
+                           
+                        });
+                }
+            });
+        }
+
+        function showSuccessAlert(message) {
+            const alertElement = document.createElement('div');
+            alertElement.classList.add('alert');
+            alertElement.textContent = message;
+            document.body.appendChild(alertElement);
+            setTimeout(() => {
+                alertElement.remove();
+            }, 3000);
+        }
+
+        function fetchReminders() {
+            axios.get('/api/reminders', {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                    },
+                })
+                .then(function(response) {
+                    showSuccessAlert('Reminder deleted successfully');
+                    location.reload();
+                })
+                .catch(function(error) {
+                    var checkErrorMessage = error.response.data.err;
+                    console.error('Error fetching reminders:', error);
+                });
+        }
+
+        function closeDeleteReminderModal() {
+            document.getElementById('deleteReminderModal').classList.add('hidden');
+        }
+
+        function getReminderList(response) {
+            var reminderListElement = document.getElementById('reminderList');
                 var reminders = response.data.data.reminders;
 
                 if (reminders.length > 0) {
@@ -315,203 +495,43 @@
                     }).join('')}
                 </tbody>
             </table>`;
-                } else {
-                    reminderListElement.innerHTML = '<p>No reminders found.</p>';
-                }
-            }).catch(function(error) {
-                console.error('Error fetching reminders:', error);
-            });
+        } else {
+            reminderListElement.innerHTML = '<p>No reminders found.</p>';
+        }
         }
 
-        function viewReminder(reminderId) {
-            axios.get(`/api/reminders/${reminderId}`, {
+        function getNewToken(){
+            axios.put(`/api/session`,{}, {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                        Authorization: `Bearer ${localStorage.getItem('refresh_token')}`,
                     },
                 })
                 .then(function(response) {
-                    // Populate modal content with reminder details
-                    const formattedRemindAt = response.data.data.remind_at ?
+                    const accessToken = response.data.data.access_token;
+                    localStorage.removeItem('access_token');
+                    localStorage.setItem('access_token', accessToken);
+                })
+                .catch(function(error) {
+                    console.error('error fetching data:', error);
+                });
+            
+        }
+
+        function getDetail(response){
+             // Populate modal content with reminder details
+            const formattedRemindAt = response.data.data.remind_at ?
                         new Date(response.data.data.remind_at * 1000).toLocaleString() :
                         'N/A';
 
-                    const formattedEventAt = response.data.data.event_at ?
-                        new Date(response.data.data.event_at * 1000).toLocaleString() :
-                        'N/A';
+            const formattedEventAt = response.data.data.event_at ?
+                new Date(response.data.data.event_at * 1000).toLocaleString() :
+                'N/A';
 
-                    document.getElementById('showTitle').innerText = response.data.data.title;
-                    document.getElementById('showDescription').innerText = response.data.data.description;
-                    document.getElementById('showRemindAt').innerText = formattedRemindAt
-                    document.getElementById('showEventAt').innerText = formattedEventAt;
-                    document.getElementById('showReminderModal').classList.remove('hidden');
-                })
-                .catch(function(error) {
-                    console.error('Error fetching reminder details:', error);
-                });
-        }
-
-        function closeShowReminderModal() {
-            document.getElementById('showReminderModal').classList.add('hidden');
-        }
-
-        function openCreateReminderModal() {
-            var modal = document.getElementById('createReminderModal');
-            modal.style.display = 'block';
-        }
-
-        function closeCreateReminderModal() {
-            var modal = document.getElementById('createReminderModal');
-            modal.style.display = 'none';
-        }
-
-        function createReminder() {
-            var title = document.getElementById('reminderTitle').value;
-            var description = document.getElementById('reminderDescription').value;
-            var remindAt = new Date(document.getElementById('reminderRemindAt').value).getTime() / 1000;
-            var eventAt = new Date(document.getElementById('reminderEventAt').value).getTime() / 1000;
-
-            var payload = {
-                title: title,
-                description: description,
-                remind_at: remindAt,
-                event_at: eventAt,
-            };
-
-            axios.post('/api/reminders', payload, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    },
-                })
-                .then(function(response) {
-                    closeCreateReminderModal();
-                    location.reload();
-                })
-                .catch(function(error) {
-                    console.error('Error creating reminder:', error);
-                });
-        }
-
-        function showReminder(reminderId) {
-            axios.get(`/api/reminders/${reminderId}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    },
-                })
-                .then(function(response) {
-                    document.getElementById('showTitle').innerText = response.data.title;
-                    document.getElementById('showDescription').innerText = response.data.description;
-                    document.getElementById('showRemindAt').innerText = response.data.remind_at;
-                    document.getElementById('showEventAt').innerText = response.data.event_at;
-                    document.getElementById('showReminderModal').classList.remove('hidden');
-                })
-                .catch(function(error) {
-                    console.error('Error fetching reminder details:', error);
-                });
-        }
-
-        function closeShowReminderModal() {
-            document.getElementById('showReminderModal').classList.add('hidden');
-        }
-
-        function editReminder(id) {
-            axios.get(`/api/reminders/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    },
-                })
-                .then(function(response) {
-                    var reminder = response.data.data;
-                    document.getElementById('editReminderId').value = reminder.id;
-                    document.getElementById('editReminderTitle').value = reminder.title;
-                    document.getElementById('editReminderDescription').value = reminder.description;
-                    document.getElementById('editReminderRemindAt').value = new Date(reminder.remind_at * 1000)
-                        .toISOString().slice(0, -8);
-                    document.getElementById('editReminderEventAt').value = new Date(reminder.event_at * 1000)
-                        .toISOString().slice(0, -8);
-                    document.getElementById('editReminderModal').classList.remove('hidden');
-                })
-                .catch(function(error) {
-                    console.error('Error fetching reminder details for editing:', error);
-                });
-        }
-
-        // Function to update the reminder
-        function updateReminder() {
-            const reminderId = document.getElementById('editReminderId').value;
-            const title = document.getElementById('editReminderTitle').value;
-            const description = document.getElementById('editReminderDescription').value;
-            const remindAt = new Date(document.getElementById('editReminderRemindAt').value).getTime() / 1000;
-            const eventAt = new Date(document.getElementById('editReminderEventAt').value).getTime() / 1000;
-            axios.put(`/api/reminders/${reminderId}`, {
-                    title: title,
-                    description: description,
-                    remind_at: remindAt,
-                    event_at: eventAt,
-                }, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    },
-                })
-                .then(function(response) {
-                    closeEditReminderModal();
-                    location.reload();
-                })
-                .catch(function(error) {
-                });
-        }
-
-        function closeEditReminderModal() {
-            document.getElementById('editReminderModal').classList.add('hidden');
-        }
-
-        function deleteReminder(id) {
-            document.getElementById('deleteReminderModal').classList.remove('hidden');
-            document.getElementById('deleteReminderModal').addEventListener('click', function(event) {
-                if (event.target.classList.contains('bg-red-500')) {
-                    axios.delete(`/api/reminders/${id}`, {
-                            headers: {
-                                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                            },
-                        })
-                        .then(function() {
-                            showSuccessAlert('Reminder deleted successfully');
-                            closeDeleteReminderModal();
-                            fetchReminders();
-                        })
-                        .catch(function(error) {
-                            console.error('Error deleting reminder:', error);
-                        });
-                }
-            });
-        }
-
-        function showSuccessAlert(message) {
-            const alertElement = document.createElement('div');
-            alertElement.classList.add('alert');
-            alertElement.textContent = message;
-            document.body.appendChild(alertElement);
-            setTimeout(() => {
-                alertElement.remove();
-            }, 3000);
-        }
-
-        function fetchReminders() {
-            axios.get('/api/reminders', {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    },
-                })
-                .then(function(response) {
-                    showSuccessAlert('Reminder deleted successfully');
-                    location.reload();
-                })
-                .catch(function(error) {
-                    console.error('Error fetching reminders:', error);
-                });
-        }
-
-        function closeDeleteReminderModal() {
-            document.getElementById('deleteReminderModal').classList.add('hidden');
+            document.getElementById('showTitle').innerText = response.data.data.title;
+            document.getElementById('showDescription').innerText = response.data.data.description;
+            document.getElementById('showRemindAt').innerText = formattedRemindAt
+            document.getElementById('showEventAt').innerText = formattedEventAt;
+            document.getElementById('showReminderModal').classList.remove('hidden');
         }
     </script>
 </body>
